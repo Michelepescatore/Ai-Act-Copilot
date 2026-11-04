@@ -33,17 +33,12 @@ data/processed/*
 !data/processed/.gitkeep
 
 # risultati eval (rigenerabili con make eval)
+# Eccezione: i due grafici mostrati nel README devono essere versionati.
 evals/results/
+!evals/results/
+!evals/results/retrieval_comparison_dev.png
+!evals/results/retrieval_comparison_test.png
 
 # file temporanei di editor
 *.swp
 *~
-
-# --- MCP (esperimento locale, non pushato) ---
-# Il server MCP è un prototipo locale per imparare il protocollo. Non fa
-# parte del portfolio pubblico: il segnale è nella valutazione (Fase 8),
-# non nell'esposizione del corpus a Claude. Vedi decisions.md ADR-013.
-src/copilot/mcp_server/
-tests/test_mcp.py
-Dockerfile
-examples/claude_desktop_config.json
