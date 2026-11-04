@@ -1,0 +1,170 @@
+[
+  {
+    "node": "language_detect",
+    "ms": 1384.6,
+    "prompt_tokens": 205,
+    "completion_tokens": 5,
+    "cost_usd": 3e-05
+  },
+  {
+    "node": "translate_input",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "fact_extraction",
+    "ms": 1959.8,
+    "prompt_tokens": 1290,
+    "completion_tokens": 211,
+    "cost_usd": 0.00024
+  },
+  {
+    "node": "article_discovery",
+    "ms": 21080.0,
+    "prompt_tokens": 1320,
+    "completion_tokens": 346,
+    "cost_usd": 0.000282
+  },
+  {
+    "node": "paragraph_check",
+    "ms": 21578.4,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "synthesis",
+    "ms": 4463.8,
+    "prompt_tokens": 4287,
+    "completion_tokens": 751,
+    "cost_usd": 0.00081
+  },
+  {
+    "node": "report",
+    "ms": 0.2,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "translate_output",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "language_detect",
+    "ms": 742.6,
+    "prompt_tokens": 205,
+    "completion_tokens": 5,
+    "cost_usd": 3e-05
+  },
+  {
+    "node": "translate_input",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "fact_extraction",
+    "ms": 1979.7,
+    "prompt_tokens": 1290,
+    "completion_tokens": 211,
+    "cost_usd": 0.00024
+  },
+  {
+    "node": "article_discovery",
+    "ms": 6153.3,
+    "prompt_tokens": 1320,
+    "completion_tokens": 328,
+    "cost_usd": 0.000277
+  },
+  {
+    "node": "paragraph_check",
+    "ms": 21651.4,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "synthesis",
+    "ms": 5779.4,
+    "prompt_tokens": 4268,
+    "completion_tokens": 957,
+    "cost_usd": 0.000865
+  },
+  {
+    "node": "report",
+    "ms": 0.2,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "translate_output",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "language_detect",
+    "ms": 742.2,
+    "prompt_tokens": 205,
+    "completion_tokens": 5,
+    "cost_usd": 3e-05
+  },
+  {
+    "node": "translate_input",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "fact_extraction",
+    "ms": 1711.6,
+    "prompt_tokens": 1290,
+    "completion_tokens": 208,
+    "cost_usd": 0.000239
+  },
+  {
+    "node": "article_discovery",
+    "ms": 6131.5,
+    "prompt_tokens": 1320,
+    "completion_tokens": 324,
+    "cost_usd": 0.000276
+  },
+  {
+    "node": "paragraph_check",
+    "ms": 24037.9,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "synthesis",
+    "ms": 4655.4,
+    "prompt_tokens": 4262,
+    "completion_tokens": 822,
+    "cost_usd": 0.000827
+  },
+  {
+    "node": "report",
+    "ms": 0.2,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  },
+  {
+    "node": "translate_output",
+    "ms": 0.0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  }
+]

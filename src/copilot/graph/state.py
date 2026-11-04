@@ -1,10 +1,10 @@
-"""Typed state of the LangGraph graph."""
+"""Stato tipizzato del grafo LangGraph."""
 
 from __future__ import annotations
 
 from typing import Literal, TypedDict
 
-# Facts. Each fact has a status that says how reliable it is.
+# Fatti. Ogni fatto ha uno stato che dice quanto è affidabile.
 FactStatus = Literal["known", "inferred", "unknown", "missing"]
 
 
@@ -19,16 +19,16 @@ class FactValue(TypedDict):
 
 class CaseFacts(TypedDict):
     facts: list[FactValue]
-    user_input: str  # in English (already translated, if needed)
+    user_input: str  # in inglese (già tradotto, se necessario)
 
-# Candidate articles selected by the article_discovery node.
+# Articoli candidati selezionati dal nodo article_discovery.
 class ArticleCandidate(TypedDict):
     id: str
     title: str
     score: float
     rationale: str
 
-# Paragraphs retrieved from the corpus to support the synthesis.
+# Paragrafi recuperati dal corpus per supportare la sintesi.
 class ParagraphEvidence(TypedDict):
     chunk_id: str
     article_id: str
@@ -36,7 +36,7 @@ class ParagraphEvidence(TypedDict):
     score: float
     rank: int
 
-# Synthesis produced by the model, with citations already verified against the corpus.
+# Sintesi prodotta dal modello, con citazioni già verificate contro il corpus.
 class Citation(TypedDict):
     claim: str
     chunk_id: str
@@ -48,13 +48,13 @@ class Synthesis(TypedDict):
     citations: list[Citation]
     has_compliance_issue: bool
 
-# Open questions: inferred, unknown or missing fields to clarify with the user.
+# Domande aperte: campi inferiti, sconosciuti o mancanti da chiarire con l'utente.
 class OpenQuestion(TypedDict):
     kind: Literal["inferred", "unknown", "missing"]
     field: str
     question: str
 
-# Final report exposed to the caller.
+# Report finale esposto al chiamante.
 class Report(TypedDict):
     summary: str
     facts: list[FactValue]
@@ -66,38 +66,37 @@ class Report(TypedDict):
 
 
 class GraphState(TypedDict, total=False):
-    # Original user input, in their language.
+    # Input originale dell'utente, nella sua lingua.
     user_input: str
 
-    # Detected language and input translated into English.
+    # Lingua rilevata e input tradotto in inglese.
     detected_language: str
     user_input_en: str
     final_answer: str
 
-    # Pipeline internals.
+    # Interni della pipeline.
     facts: CaseFacts
     candidate_articles: list[ArticleCandidate]
     paragraphs: list[ParagraphEvidence]
     synthesis: Synthesis
 
-    # Clarification questions already reformulated (in English) and translated
-    # into the user's language. Persisted between `prepare_questions` and
-    # `ask_user` thanks to the checkpointer, so the LLM call is not repeated
-    # on resume.
+    # Domande di chiarificazione già riformulate (in inglese) e tradotte
+    # nella lingua utente. Persistenti tra `prepare_questions` e `ask_user`
+    # grazie al checkpointer, così al resume non si rifà la chiamata LLM.
     pending_questions: list[str]
 
-    # Flow control.
+    # Controllo di flusso.
     needs_user_input: bool
     user_clarification: str
     user_clarification_original: str
     is_compliant: bool
 
-    # Trace id to correlate the logs of the same execution.
+    # Trace id per correlare i log della stessa esecuzione.
     trace_id: str
 
-    # True if the input contains suspicious prompt-injection patterns.
+    # True se l'input contiene pattern sospetti di prompt injection.
     suspicious_input: bool
 
-    # Final output and error, if any.
+    # Output finale e errore, se presente.
     report: Report
     error: str | None

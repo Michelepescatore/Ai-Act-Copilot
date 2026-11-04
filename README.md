@@ -1,6 +1,6 @@
 # AI Act Compliance Copilot
 
-**Version:** 1, 2026-11-03
+**Version:** 1, 2026-11-04
 
 The project aims to show how a RAG system can be orchestrated over the AI Act, allowing the user to analyse their AI use case and obtain the legal issues of their system. The project is not intended as a substitute for the opinion of a legal professional, but as a support for the user's own awareness. The project develops the chunking of the source document, the generation of chunk embeddings, and their storage in a vector database. It then provides several retrieval methodologies whose performance is measured to select the best retrieval algorithm among those analysed. A graph is built with LangGraph to orchestrate the pipeline, and an LLM via API (DeepSeek, model `deepseek-chat`) evaluates and refines the results. Guardrails neutralise forbidden phrases, flag unverified citations, and detect prompt injection attempts. Latencies per node are highlighted and, after tuning on a dev set, the reliability of the system is evaluated on a test set. All flows are covered by a test suite that helps in debugging and in preventing unexpected behaviour. The project is not intended as a product ready for a production environment, but as an illustrative example of what can be built thanks to the development of AI solutions.
 

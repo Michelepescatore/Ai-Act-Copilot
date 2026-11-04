@@ -1,0 +1,72 @@
+{
+  "trace_id": "eval:3d0054ebf13d",
+  "timestamp": "2026-11-04T21:46:51.712580+00:00",
+  "collection": "articles_v1",
+  "k": 5,
+  "split": "dev",
+  "n_queries": 33,
+  "methods": [
+    "dense",
+    "sparse",
+    "hybrid",
+    "hybrid_rerank"
+  ],
+  "results": [
+    {
+      "method": "dense",
+      "collection": "articles_v1",
+      "k": 5,
+      "n_queries": 33,
+      "mean_recall": 0.8636363636363636,
+      "recall_ci_lo": 0.7575757575757576,
+      "recall_ci_hi": 0.9545454545454546,
+      "mean_precision": 0.19393939393939394,
+      "mrr": 0.7065656565656565,
+      "mean_ndcg": 0.7270118948884025,
+      "ndcg_ci_lo": 0.6126887900906494,
+      "ndcg_ci_hi": 0.8369450566870122
+    },
+    {
+      "method": "sparse",
+      "collection": "articles_v1",
+      "k": 5,
+      "n_queries": 33,
+      "mean_recall": 0.7121212121212122,
+      "recall_ci_lo": 0.5606060606060606,
+      "recall_ci_hi": 0.8484848484848485,
+      "mean_precision": 0.16363636363636364,
+      "mrr": 0.6878787878787879,
+      "mean_ndcg": 0.6817896127246125,
+      "ndcg_ci_lo": 0.5281444264474575,
+      "ndcg_ci_hi": 0.8253748392002573
+    },
+    {
+      "method": "hybrid",
+      "collection": "articles_v1",
+      "k": 5,
+      "n_queries": 33,
+      "mean_recall": 0.8333333333333334,
+      "recall_ci_lo": 0.7121212121212122,
+      "recall_ci_hi": 0.9393939393939394,
+      "mean_precision": 0.1878787878787879,
+      "mrr": 0.6893939393939394,
+      "mean_ndcg": 0.7133918034460479,
+      "ndcg_ci_lo": 0.5958437393776383,
+      "ndcg_ci_hi": 0.8293162164228994
+    },
+    {
+      "method": "hybrid_rerank",
+      "collection": "articles_v1",
+      "k": 5,
+      "n_queries": 33,
+      "mean_recall": 0.9090909090909091,
+      "recall_ci_lo": 0.8333333333333334,
+      "recall_ci_hi": 0.9848484848484849,
+      "mean_precision": 0.20606060606060608,
+      "mrr": 0.7777777777777778,
+      "mean_ndcg": 0.7907146653078041,
+      "ndcg_ci_lo": 0.6897351221795135,
+      "ndcg_ci_hi": 0.8842664600701896
+    }
+  ]
+}

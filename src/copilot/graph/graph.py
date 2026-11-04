@@ -1,4 +1,4 @@
-"""Build the LangGraph graph with multilingual support."""
+"""Costruzione del grafo LangGraph con supporto multilingua."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from copilot.llm import LLMClient
 from copilot.observability import set_trace_id, timed_node
 
 
-# Node that detects the language and propagates the trace_id (thread_id) to the logs.
+# Nodo che rileva la lingua e propaga il trace_id (thread_id) ai log.
 def language_detect(
     state: GraphState,
     config: RunnableConfig,
@@ -39,7 +39,7 @@ def language_detect(
     return {"detected_language": code, "trace_id": tid}
 
 
-# Node that translates the input into English (or leaves it unchanged if already English).
+# Nodo che traduce l'input in inglese (o lo lascia invariato se già inglese).
 def translate_input(state: GraphState, *, llm: LLMClient) -> dict:
     code = state.get("detected_language", "en")
     user_input = state.get("user_input", "")
@@ -49,7 +49,7 @@ def translate_input(state: GraphState, *, llm: LLMClient) -> dict:
     return {"user_input_en": translated}
 
 
-# Node that translates the report back into the user's original language.
+# Nodo che traduce il report nella lingua originale dell'utente.
 def translate_output(state: GraphState, *, llm: LLMClient) -> dict:
     code = state.get("detected_language", "en")
     report = state.get("report")
@@ -68,15 +68,15 @@ def translate_output(state: GraphState, *, llm: LLMClient) -> dict:
     return {"report": new_report, "final_answer": translated_summary}
 
 
-# Node that prepares the clarification questions BEFORE the interrupt:
-#   1. nodes.ask_user reformulates the missing facts as natural questions (English)
-#   2. translate_from_english translates them into the user's language
-#   3. writes the result into state["pending_questions"]
+# Nodo che prepara le domande di chiarificazione PRIMA dell'interrupt:
+#   1. nodes.ask_user riformula i fatti mancanti in domande naturali (inglese)
+#   2. translate_from_english le traduce nella lingua utente
+#   3. scrive il risultato in state["pending_questions"]
 #
-# Keeping the LLM part here (and not in the node with the interrupt) is essential
-# in LangGraph: on resume, the node with the interrupt is re-executed from the top,
-# but the LLM calls are not repeated because pending_questions is already
-# persisted by the checkpointer.
+# Tenere qui la parte LLM (e non nel nodo con interrupt) è essenziale in
+# LangGraph: al resume il nodo con interrupt viene rieseguito dall'inizio,
+# ma le chiamate LLM non vengono rifatte perché pending_questions è già
+# persistito dal checkpointer.
 def prepare_questions(state: GraphState, *, llm: LLMClient) -> dict:
     result = nodes.ask_user(state, llm=llm)
     questions = result["questions"]
@@ -88,10 +88,10 @@ def prepare_questions(state: GraphState, *, llm: LLMClient) -> dict:
     return {"pending_questions": questions}
 
 
-# ask_user node: interrupt only, idempotent on resume.
-# On resume, LangGraph re-executes the node from the top, but interrupt() returns
-# the resume value immediately without calling the LLM (pending_questions is
-# already in the state, so there is nothing to recompute).
+# Nodo ask_user: solo interrupt, idempotente al resume.
+# Al resume LangGraph riesegue il nodo dall'inizio, ma interrupt() ritorna
+# subito il valore del resume senza chiamare l'LLM (pending_questions è
+# già nello state, quindi non c'è nulla da ricalcolare).
 def _make_ask_user_node():
     def ask_user_node(state: GraphState) -> dict:
         questions = state.get("pending_questions", [])
@@ -101,11 +101,11 @@ def _make_ask_user_node():
     return ask_user_node
 
 
-# Build the graph with timing and trace_id on every node.
+# Costruisce il grafo con timing e trace_id su ogni nodo.
 def build_graph(llm: LLMClient) -> StateGraph:
     graph = StateGraph(GraphState)
 
-    # Every node is wrapped by timed_node to log ms and cost.
+    # Ogni nodo viene avvolto da timed_node per loggare ms e costo.
     graph.add_node(
         "language_detect",
         timed_node("language_detect", partial(language_detect, llm=llm), llm),
@@ -192,7 +192,7 @@ def build_graph(llm: LLMClient) -> StateGraph:
     return graph
 
 
-# Compile the graph with an in-memory checkpointer.
+# Compila il grafo con un checkpointer in memoria.
 def compile_graph(llm: LLMClient | None = None):
     llm = llm or LLMClient()
     graph = build_graph(llm)

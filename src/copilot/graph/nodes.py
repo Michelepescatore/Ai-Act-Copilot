@@ -1,4 +1,4 @@
-"""LangGraph graph nodes."""
+"""Nodi del grafo LangGraph."""
 
 from __future__ import annotations
 
@@ -33,14 +33,14 @@ from copilot.retrieval.store import QdrantStore
 
 logger = logging.getLogger(__name__)
 
-# Retrieval method used by the graph.
+# Metodo di retrieval usato dal grafo.
 RETRIEVAL_METHOD = "hybrid_rerank"
 
-# Maximum length of the English input. Beyond this, we reject with a handled error.
+# Lunghezza massima dell'input inglese. Oltre, rifiutiamo con un errore gestito.
 MAX_INPUT_CHARS = 4000
 
-# Allowed values for fields with a closed vocabulary. Used to suggest options
-# in the clarification question.
+# Valori ammessi per i campi con vocabolario chiuso. Servono per suggerire
+# le opzioni nella domanda di chiarificazione.
 _ALLOWED_VALUES: dict[str, list[str]] = {
     "operator_role": [
         "provider",
@@ -54,7 +54,7 @@ _ALLOWED_VALUES: dict[str, list[str]] = {
     ],
 }
 
-# Prompt-injection patterns. We do not block, but we flag them.
+# Pattern di prompt injection. Non blocchiamo, ma segnaliamo.
 _INJECTION_PATTERNS = [
     re.compile(r"\bignore (all |any )?(previous |prior )?instructions\b", re.I),
     re.compile(r"\bignore (the )?(system|prompt|rules)\b", re.I),
@@ -64,7 +64,7 @@ _INJECTION_PATTERNS = [
     re.compile(r"\bsystem prompt\b", re.I),
 ]
 
-# Forbidden phrases in the output. If the model produces them, they are replaced.
+# Frasi vietate nell'output. Se il modello le produce, vengono sostituite.
 FORBIDDEN_PATTERNS = [
     re.compile(r"\byour system is (fully |pienamente )?compliant\b", re.I),
     re.compile(r"\byou are (fully |pienamente )?compliant\b", re.I),
@@ -112,14 +112,14 @@ class _SynthesisLLM(BaseModel):
     has_compliance_issue: bool
 
 
-# Schema for the reformulation of clarification questions.
+# Schema per la riformulazione delle domande di chiarificazione.
 class _QuestionReformulationLLM(BaseModel):
     questions: list[str]
 
 
 @lru_cache(maxsize=1)
 def _retriever() -> Retriever:
-    """Retriever singleton. Tests patch it via cache_clear."""
+    """Singleton del retriever. I test lo patchano via cache_clear."""
     from copilot.retrieval.embedders import Embedders
 
     return Retriever(
@@ -129,7 +129,7 @@ def _retriever() -> Retriever:
 
 
 def _query_from_facts(facts: CaseFacts) -> str:
-    """Build the retrieval query from the known or inferred facts."""
+    """Costruisce la query di retrieval a partire dai fatti noti o inferiti."""
     parts = [
         f"{f['field']}={f['value']}"
         for f in facts["facts"]
@@ -139,12 +139,12 @@ def _query_from_facts(facts: CaseFacts) -> str:
 
 
 def _has_suspicious_pattern(text: str) -> bool:
-    """True if the text contains a known prompt-injection pattern."""
+    """True se il testo contiene un pattern di prompt injection noto."""
     return any(p.search(text) for p in _INJECTION_PATTERNS)
 
 
 def _neutralize_forbidden(text: str) -> str:
-    """Replace forbidden phrases with a neutral formulation."""
+    """Sostituisce le frasi vietate con una formula neutra."""
     result = text
     for pat in FORBIDDEN_PATTERNS:
         result, n = pat.subn(_NEUTRAL_FALLBACK, result)
@@ -154,7 +154,7 @@ def _neutralize_forbidden(text: str) -> str:
 
 
 def _apply_report_guards(report: dict) -> dict:
-    """Neutralize forbidden phrases, add disclaimer and unverified-citation warning."""
+    """Neutralizza frasi vietate, aggiunge disclaimer e warning su citazioni."""
     summary = report.get("summary", "")
     summary = _neutralize_forbidden(summary)
 
@@ -170,23 +170,23 @@ def _apply_report_guards(report: dict) -> dict:
 
 
 def fact_extraction(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
-    """Extract the facts from the case (in English, after translation)."""
+    """Estrae i fatti dal caso (in inglese, dopo la traduzione)."""
     from copilot.graph.language import translate_to_english
 
     user_input_en = state.get("user_input_en") or state.get("user_input", "")
     clarification_original = state.get("user_clarification_original")
     code = state.get("detected_language", "en")
 
-    # Reject inputs that are too long before calling the model.
+    # Rifiuta input troppo lunghi prima di chiamare il modello.
     if len(user_input_en) > MAX_INPUT_CHARS:
         return {"error": f"input_too_long: {len(user_input_en)} > {MAX_INPUT_CHARS}"}
 
-    # Detect possible prompt injection. Does not block: proceeds and flags.
+    # Rileva eventuale prompt injection. Non blocca: prosegue e segnala.
     suspicious = _has_suspicious_pattern(user_input_en)
     if suspicious:
         logger.warning("suspicious input detected (prompt injection pattern)")
 
-    # Translate the user's clarification (if any) into English.
+    # Traduce il chiarimento dell'utente (se presente) in inglese.
     clarification_en = ""
     if clarification_original:
         if code != "en":
@@ -194,7 +194,7 @@ def fact_extraction(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
         else:
             clarification_en = clarification_original
 
-    # Build the prompt with the input delimited by tags.
+    # Costruisce il prompt con input delimitato da tag.
     parts = [f"<user_input>\n{user_input_en}\n</user_input>"]
     if clarification_en:
         parts.append(f"<user_clarification>\n{clarification_en}\n</user_clarification>")
@@ -222,8 +222,8 @@ def fact_extraction(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
         for f in result.facts
     ]
 
-    # Discard non-required "unknown" facts: the prompt should already
-    # omit them, this is a safety net.
+    # Scarta i fatti "unknown" non obbligatori: il prompt dovrebbe già
+    # ometterli, questa è una rete di sicurezza.
     facts = [f for f in facts if f["status"] != "unknown" or f["required"]]
 
     blocking = [
@@ -240,12 +240,12 @@ def fact_extraction(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
 
 
 def ask_user(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
-    """Rephrase the questions for the user in natural language.
+    """Riformula in linguaggio naturale le domande per l'utente.
 
-    Takes the missing required facts, builds a prompt with field,
-    rationale and allowed values (if any), and asks the LLM to produce
-    a question readable by a non-expert user. If the call fails,
-    it falls back to a simple template.
+    Prende i fatti obbligatori mancanti, costruisce un prompt con field,
+    rationale e valori ammessi (se presenti), e chiede all'LLM di produrre
+    una domanda leggibile da un utente non esperto. Se la chiamata fallisce,
+    ricade su un template semplice.
     """
     facts = state["facts"]["facts"]
     blocking = [
@@ -255,7 +255,7 @@ def ask_user(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
     if not blocking:
         return {"questions": []}
 
-    # Build the description of the missing facts for the prompt.
+    # Costruisce la descrizione dei fatti mancanti per il prompt.
     lines: list[str] = []
     for f in blocking:
         allowed = _ALLOWED_VALUES.get(f["field"], [])
@@ -274,7 +274,7 @@ def ask_user(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
         )
         questions = result.questions
     except LLMError as exc:
-        # Fallback: simple template, consistent with the number of facts.
+        # Fallback: template semplice, coerente con il numero di fatti.
         logger.warning("ask_user reformulation failed: %s", exc)
         questions = [
             f"Please provide a value for `{f['field']}`." for f in blocking
@@ -284,7 +284,7 @@ def ask_user(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
 
 
 def article_discovery(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
-    """Select the candidate articles via retrieval + LLM."""
+    """Seleziona gli articoli candidati via retrieval + LLM."""
     if state.get("error"):
         return {}
 
@@ -304,8 +304,8 @@ def article_discovery(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
         for h in hits
     )
     prompt = (
-        f"Case facts:\n{query}\n\n"
-        f"Retrieved candidate articles:\n{candidates_text}"
+        f"Fatti del caso:\n{query}\n\n"
+        f"Articoli candidati recuperati:\n{candidates_text}"
     )
 
     try:
@@ -335,11 +335,11 @@ def article_discovery(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
 
 
 def paragraph_check(state: GraphState) -> dict[str, Any]:
-    """Retrieve the relevant paragraphs in a single pass, then filter by article.
+    """Recupera i paragrafi rilevanti in un'unica passata, poi filtra per articolo.
 
-    Optimization: previously we made one retrieval call per candidate article.
-    Now we make a single call with a higher limit, then filter by article
-    in memory.
+    Ottimizzazione: prima facevamo una chiamata di retrieval per ogni articolo
+    candidato. Ora ne facciamo una sola con limit più alto, poi filtriamo per
+    articolo in memoria.
     """
     if state.get("error"):
         return {}
@@ -357,7 +357,7 @@ def paragraph_check(state: GraphState) -> dict[str, Any]:
         limit=50,
     )
 
-    # Index hits by article number, for O(1) filtering.
+    # Indicizza gli hit per numero di articolo, per filtro O(1).
     by_article: dict[str, list[dict]] = {}
     for h in hits:
         article_num = str(h["payload"].get("article") or "")
@@ -372,7 +372,7 @@ def paragraph_check(state: GraphState) -> dict[str, Any]:
         article_num = article["id"].replace("art_", "")
         article_hits = by_article.get(article_num, [])
 
-        # Fallback: if the article has no direct hits, take the first 3 global ones.
+        # Fallback: se l'articolo non ha hit diretti, prendi i primi 3 globali.
         if not article_hits:
             article_hits = hits[:3]
 
@@ -395,7 +395,7 @@ def paragraph_check(state: GraphState) -> dict[str, Any]:
 
 
 def synthesis(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
-    """Produce the synthesis and verify the citations against the context."""
+    """Produce la sintesi e verifica le citazioni contro il contesto."""
     if state.get("error"):
         return {}
 
@@ -414,10 +414,10 @@ def synthesis(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
     )
 
     prompt = (
-        f"Case facts:\n{facts_text}\n\n"
-        f"Candidate articles:\n{articles_text}\n\n"
-        f"Relevant paragraphs:\n{paragraphs_text}\n\n"
-        f"Original question: {facts['user_input']}"
+        f"Fatti del caso:\n{facts_text}\n\n"
+        f"Articoli candidati:\n{articles_text}\n\n"
+        f"Paragrafi rilevanti:\n{paragraphs_text}\n\n"
+        f"Domanda originale: {facts['user_input']}"
     )
 
     try:
@@ -454,7 +454,7 @@ def synthesis(state: GraphState, *, llm: LLMClient) -> dict[str, Any]:
 
 
 def no_compliance_issue(state: GraphState) -> dict[str, Any]:
-    """Minimal report when no compliance issues emerge."""
+    """Report minimale quando non emergono problemi di conformità."""
     synthesis = state["synthesis"]
     report = Report(
         summary=synthesis["summary"],
@@ -471,7 +471,7 @@ def no_compliance_issue(state: GraphState) -> dict[str, Any]:
 
 
 def report_node(state: GraphState) -> dict[str, Any]:
-    """Final report with open questions, unverified citations and disclaimer."""
+    """Report finale con domande aperte, citazioni non verificate e disclaimer."""
     facts = state["facts"]["facts"]
     synthesis = state["synthesis"]
 
@@ -528,13 +528,13 @@ def report_node(state: GraphState) -> dict[str, Any]:
 
 
 def error_node(state: GraphState) -> dict[str, Any]:
-    """Minimal report in case of error, with disclaimer."""
-    err = state.get("error") or "unknown error"
+    """Report minimale in caso di errore, con disclaimer."""
+    err = state.get("error") or "errore sconosciuto"
     logger.error("graph.error: %s", err)
     report = Report(
         summary=(
-            "The analysis could not be completed due to an error "
-            f"in the LLM: {err}. Please try again or rephrase your question."
+            "Non è stato possibile completare l'analisi a causa di un errore "
+            f"nel LLM: {err}. Riprova o riformula la domanda."
         ),
         facts=state.get("facts", {"facts": [], "user_input": ""})["facts"],  # type: ignore[index]
         articles=state.get("candidate_articles", []),

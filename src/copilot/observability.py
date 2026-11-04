@@ -1,9 +1,4 @@
-"""Structured JSON logging and utilities for per-node timing and cost.
-
-We do not use structlog: standard logging + a custom formatter is enough.
-The LOG_CONTENT flag (env, default "false") excludes user text from logs:
-useful in public demos.
-"""
+"""Logging JSON strutturato e utility per timing e costo per nodo."""
 
 from __future__ import annotations
 
@@ -16,29 +11,29 @@ import time
 from contextvars import ContextVar
 from typing import Any, Callable
 
-# Trace id shared by all logs of the same execution.
+# Trace id condiviso tra tutti i log della stessa esecuzione.
 trace_id_var: ContextVar[str] = ContextVar("trace_id", default="")
 
-# Flag to include or exclude user content in logs. Default: no.
+# Flag per includere o meno il contenuto utente nei log. Default: no.
 LOG_CONTENT = os.environ.get("LOG_CONTENT", "false").lower() in ("1", "true", "yes")
 
-# DeepSeek cost in USD per million tokens (cache miss).
+# Costo DeepSeek in USD per milione di token (cache miss).
 COST_PER_1M_INPUT_USD = 0.14
 COST_PER_1M_OUTPUT_USD = 0.28
 
 
 def set_trace_id(trace_id: str) -> None:
-    """Set the trace id in the current context."""
+    """Imposta il trace id nel contesto corrente."""
     trace_id_var.set(trace_id)
 
 
 def get_trace_id() -> str:
-    """Return the current trace id, or an empty string if not set."""
+    """Restituisce il trace id corrente, o stringa vuota se non impostato."""
     return trace_id_var.get()
 
 
 def estimate_cost(prompt_tokens: int, completion_tokens: int) -> float:
-    """Estimated cost in USD for the (prompt, completion) token pair."""
+    """Costo stimato in USD per la coppia (prompt, completion) di token."""
     return (
         prompt_tokens * COST_PER_1M_INPUT_USD / 1_000_000
         + completion_tokens * COST_PER_1M_OUTPUT_USD / 1_000_000
@@ -46,10 +41,10 @@ def estimate_cost(prompt_tokens: int, completion_tokens: int) -> float:
 
 
 class JsonFormatter(logging.Formatter):
-    """Formatter that prints one JSON line for each log record."""
+    """Formatter che stampa una riga JSON per ogni record di log."""
 
     def format(self, record: logging.LogRecord) -> str:
-        # Base fields always present.
+        # Campi base sempre presenti.
         payload: dict[str, Any] = {
             "ts": self.formatTime(record),
             "level": record.levelname,
@@ -57,7 +52,7 @@ class JsonFormatter(logging.Formatter):
             "msg": record.getMessage(),
             "trace_id": trace_id_var.get(),
         }
-        # Extra fields passed with extra={"extra_fields": {...}}.
+        # Campi extra passati con extra={"extra_fields": {...}}.
         extra = getattr(record, "extra_fields", None)
         if extra:
             payload.update(extra)
@@ -65,7 +60,7 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_logging(level: str = "WARNING") -> None:
-    """Configure the root logger to emit JSON on stderr."""
+    """Configura il root logger per emettere JSON su stderr."""
     handler = logging.StreamHandler()
     handler.setFormatter(JsonFormatter())
     root = logging.getLogger()
@@ -75,7 +70,7 @@ def setup_logging(level: str = "WARNING") -> None:
 
 
 def log_node(name: str, ms: float, prompt_tokens: int, completion_tokens: int) -> None:
-    """Log a JSON line with the timing and cost of a graph node."""
+    """Logga una riga JSON con timing e costo di un nodo del grafo."""
     cost = estimate_cost(prompt_tokens, completion_tokens)
     logging.getLogger("copilot.nodes").info(
         "node_executed",
@@ -96,14 +91,14 @@ def timed_node(
     fn: Callable[..., dict],
     llm: Any | None = None,
 ) -> Callable[..., dict]:
-    """Wrap a node to measure time and cost.
+    """Avvolge un nodo per misurare tempo e costo.
 
-    If the node accepts a `config` parameter (like language_detect),
-    the wrapper declares it in its own signature, so LangGraph passes it.
-    Otherwise the wrapper stays `(*args, **kwargs)` and LangGraph does not
-    pass anything extra.
+    Se il nodo accetta un parametro `config` (come language_detect),
+    il wrapper lo dichiara nella propria firma, così LangGraph lo passa.
+    Altrimenti il wrapper resta `(*args, **kwargs)` e LangGraph non passa
+    nulla di extra.
     """
-    # Inspect the signature to understand whether the node accepts `config`.
+    # Ispeziona la firma per capire se il nodo accetta `config`.
     try:
         sig = inspect.signature(fn)
         accepts_config = "config" in sig.parameters
@@ -124,8 +119,8 @@ def timed_node(
             log_node(name, ms, p1 - p0, c1 - c0)
 
     if accepts_config:
-        # If the node accepts `config`, the wrapper declares it explicitly
-        # in the signature, so LangGraph passes it as the second argument.
+        # Se il nodo accetta `config`, il wrapper lo dichiara esplicitamente
+        # nella firma, così LangGraph lo passa come secondo argomento.
         @functools.wraps(fn)
         def _run_with_config(state: Any, config: Any, **kwargs: Any) -> dict:
             return _run(state, config, **kwargs)

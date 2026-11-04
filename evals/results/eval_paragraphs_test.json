@@ -1,0 +1,72 @@
+{
+  "trace_id": "eval:3d0054ebf13d",
+  "timestamp": "2026-11-04T21:46:51.712580+00:00",
+  "collection": "paragraphs_v1",
+  "k": 5,
+  "split": "test",
+  "n_queries": 17,
+  "methods": [
+    "dense",
+    "sparse",
+    "hybrid",
+    "hybrid_rerank"
+  ],
+  "results": [
+    {
+      "method": "dense",
+      "collection": "paragraphs_v1",
+      "k": 5,
+      "n_queries": 17,
+      "mean_recall": 0.7254901960784315,
+      "recall_ci_lo": 0.5784313725490197,
+      "recall_ci_hi": 0.8529411764705882,
+      "mean_precision": 0.2235294117647059,
+      "mrr": 0.7843137254901961,
+      "mean_ndcg": 0.6806223418507086,
+      "ndcg_ci_lo": 0.542791460672661,
+      "ndcg_ci_hi": 0.805223038617101
+    },
+    {
+      "method": "sparse",
+      "collection": "paragraphs_v1",
+      "k": 5,
+      "n_queries": 17,
+      "mean_recall": 0.6568627450980392,
+      "recall_ci_lo": 0.47058823529411764,
+      "recall_ci_hi": 0.8431372549019608,
+      "mean_precision": 0.21176470588235294,
+      "mrr": 0.7058823529411765,
+      "mean_ndcg": 0.6236561928799801,
+      "ndcg_ci_lo": 0.44195513043711654,
+      "ndcg_ci_hi": 0.7943691634815634
+    },
+    {
+      "method": "hybrid",
+      "collection": "paragraphs_v1",
+      "k": 5,
+      "n_queries": 17,
+      "mean_recall": 0.7745098039215685,
+      "recall_ci_lo": 0.6274509803921569,
+      "recall_ci_hi": 0.9117647058823529,
+      "mean_precision": 0.24705882352941178,
+      "mrr": 0.8039215686274509,
+      "mean_ndcg": 0.7176014157150981,
+      "ndcg_ci_lo": 0.5761564741508295,
+      "ndcg_ci_hi": 0.8456103783960021
+    },
+    {
+      "method": "hybrid_rerank",
+      "collection": "paragraphs_v1",
+      "k": 5,
+      "n_queries": 17,
+      "mean_recall": 0.7843137254901961,
+      "recall_ci_lo": 0.6372549019607844,
+      "recall_ci_hi": 0.9117647058823529,
+      "mean_precision": 0.24705882352941178,
+      "mrr": 0.8235294117647058,
+      "mean_ndcg": 0.7430601387892077,
+      "ndcg_ci_lo": 0.6117338845084204,
+      "ndcg_ci_hi": 0.8582135314473768
+    }
+  ]
+}

@@ -1,19 +1,19 @@
 # FILE: search.py
-"""Four retrieval methods based on QdrantStore.
+"""Quattro metodi di retrieval basati su QdrantStore.
 
-    dense         — semantic similarity on the dense vector
-    sparse        — lexical similarity on the sparse vector
-    hybrid        — RRF fusion of dense and sparse (on the Qdrant side)   ← default
-    hybrid_rerank — hybrid, then reranked on the client side with bge-reranker
+    dense         — similarità semantica sul vettore denso
+    sparse        — similarità lessicale sul vettore sparso
+    hybrid        — fusione RRF di dense e sparse (lato Qdrant)   ← default
+    hybrid_rerank — hybrid, poi reranked lato client con bge-reranker
 
-The reranker is loaded lazily, like the embedders. Tests can inject a fake
-reranker via `rerank_fn=`.
+Il reranker viene caricato in modo lazy, come gli embedder. I test possono
+iniettare un finto reranker tramite `rerank_fn=`.
 
-Note: `dense_rerank` was removed because it produces nearly identical results
-to `hybrid_rerank` (same reranker, same function, same top-K), but it doubles
-the evaluation time on CPU. If a comparison between "rerank on a dense basis"
-and "rerank on a hybrid basis" is needed in the future, it will be enough to
-reintroduce the block and add "dense_rerank" to METHODS.
+Nota: `dense_rerank` è stato rimosso perché produce risultati quasi identici
+a `hybrid_rerank` (stesso reranker, stessa funzione, stessa top-K), ma
+raddoppia il tempo di valutazione su CPU. Se in futuro servirà un confronto
+tra "rerank su base dense" e "rerank su base hybrid", basterà reintrodurre
+il blocco e aggiungere "dense_rerank" a METHODS.
 """
 
 from __future__ import annotations
@@ -27,13 +27,13 @@ from copilot.retrieval.store import QdrantStore
 Method = Literal["dense", "sparse", "hybrid", "hybrid_rerank"]
 METHODS: tuple[Method, ...] = ("dense", "sparse", "hybrid", "hybrid_rerank")
 
-# How many candidates to retrieve from the store before reranking.
-# Higher = the reranker has more material to promote, but slower.
+# Quanti candidati recuperare dallo store prima del reranking.
+# Più alto = il reranker ha più materiale da cui promuovere, ma più lento.
 RERANK_CANDIDATE_MULTIPLIER = 3
 
-# Default reranker model. Change here to switch from base to v2-m3.
-#   "BAAI/bge-reranker-base"    → ~278M param, mono-lingual, faster
-#   "BAAI/bge-reranker-v2-m3"   → ~568M param, multilingual, more accurate
+# Modello di reranker di default. Cambia qui per passare da base a v2-m3.
+#   "BAAI/bge-reranker-base"    → ~278M param, mono-lingua, più veloce
+#   "BAAI/bge-reranker-v2-m3"   → ~568M param, multilingue, più accurato
 RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
 
 
@@ -53,17 +53,17 @@ class Retriever:
         if rerank_fn is not None:
             self._rerank_fn = rerank_fn
         else:
-            self._rerank_fn = None  # loaded lazily
+            self._rerank_fn = None  # caricato in modo lazy
 
     def _rerank(self, query: str, texts: list[str]) -> list[float]:
-        """Perform the reranking, loading the model on first use."""
+        """Esegue il reranking, caricando il modello al primo utilizzo."""
         if self._rerank_fn is None:
             from FlagEmbedding import FlagReranker
 
             model = FlagReranker(self._reranker_model, use_fp16=False)
 
-            # `compute_score` may return a float if there is only one text.
-            # We always normalize it to a list of floats.
+            # `compute_score` può restituire un float se c'è un solo testo.
+            # Lo standardizziamo sempre a una lista di float.
             def _score(q: str, ts: list[str]) -> list[float]:
                 if not ts:
                     return []
@@ -77,8 +77,8 @@ class Retriever:
 
     def _get_text_for_rerank(self, hit) -> str:
         """
-        Extract the text to pass to the reranker from the payload of a hit.
-        Uses 'text' for paragraphs and 'title' + 'summary' for articles.
+        Estrae il testo da passare al reranker dal payload di un hit.
+        Usa 'text' per i paragrafi e 'title' + 'summary' per gli articoli.
         """
         payload = hit.payload
         if text := payload.get("text"):
@@ -97,11 +97,11 @@ class Retriever:
         method: Method = "hybrid",
         limit: int = 10,
     ) -> list[dict]:
-        """Return a list of dictionaries: {id, score, payload}."""
+        """Restituisce una lista di dizionari: {id, score, payload}."""
 
         def _as_dict(h, score: float) -> dict:
-            """Convert a Qdrant Hit object into our standard format.
-            Uses the original ID from the payload (string), not the internal hash ID."""
+            """Converte un oggetto Hit di Qdrant nel nostro formato standard.
+            Usa l'ID originale del payload (stringa), non l'ID hash interno."""
             return {
                 "id": h.payload.get("id"),
                 "score": float(score),
@@ -138,4 +138,4 @@ class Retriever:
             reranked = sorted(zip(hits, scores), key=lambda x: x[1], reverse=True)
             return [_as_dict(h, s) for h, s in reranked[:limit]]
 
-        raise ValueError(f"Unknown method: {method}")
+        raise ValueError(f"Metodo sconosciuto: {method}")

@@ -1,14 +1,14 @@
 # FILE: store.py
-"""Thin wrapper around Qdrant.
+"""Wrapper sottile attorno a Qdrant.
 
-Two collections:
-    articles_v1    — one point per article/annex (semantic profile)
-    paragraphs_v1  — one point per paragraph (verbatim text)
+Due collezioni:
+    articles_v1    — un punto per ogni articolo/allegato (profilo semantico)
+    paragraphs_v1  — un punto per ogni paragrafo (testo verbatim)
 
-Each collection stores both a dense and a sparse vector, so we can
-query with dense, sparse, hybrid, or hybrid + rerank.
+Ogni collezione memorizza sia un vettore denso che uno sparso, così possiamo
+interrogare con dense, sparse, hybrid, o hybrid + rerank.
 
-The wrapper exposes only what the indexer and the retriever need:
+Il wrapper espone solo ciò di cui l'indicizzatore e il retriever hanno bisogno:
     ensure_collection, upsert, search_dense, search_sparse, search_hybrid.
 """
 
@@ -42,14 +42,14 @@ class QdrantStore:
         url: str = "http://localhost:6333",
         client: Any | None = None,
     ) -> None:
-        # Test seam: inject a fake client; no network call.
+        # Seam per i test: inietta un client finto; nessuna chiamata di rete.
         self.client = client or QdrantClient(url=url)
 
     def ensure_collection(self, name: str, dense_dim: int) -> None:
-        """Create the collection with both vectors, dense and sparse.
+        """Crea la collezione con entrambi i vettori, denso e sparso.
 
-        Idempotent: if the collection already exists, do nothing.
-        Also creates payload indices for efficient filtering.
+        Idempotente: se la collezione esiste già, non fa nulla.
+        Crea anche gli indici di payload per un filtraggio efficiente.
         """
         if self.client.collection_exists(name):
             return
@@ -64,8 +64,8 @@ class QdrantStore:
                 ),
             },
         )
-        # Create payload indices for the fields we want to filter on.
-        # This speeds up filtered queries (e.g. step 5 of the pipeline).
+        # Crea indici di payload per i campi su cui vogliamo filtrare.
+        # Questo velocizza le query con filtro (es. per step 5 della pipeline).
         for field_name in ["article", "doc_type", "annex"]:
             self.client.create_payload_index(
                 collection_name=name,
@@ -82,11 +82,11 @@ class QdrantStore:
         dense: list[list[float]],
         sparse: list[dict[int, float]],
     ) -> None:
-        """Upsert the points. All lists must have the same length.
+        """Upsert dei punti. Tutte le liste devono avere la stessa lunghezza.
 
-        Qdrant expects the sparse vector as `SparseVector(indices, values)`,
-        not as a dict `{int: float}`. We convert here, so callers can keep
-        the Python-friendly format.
+        Qdrant si aspetta il vettore sparso come `SparseVector(indices, values)`,
+        non come un dict `{int: float}`. Convertiamo qui, così i chiamanti
+        mantengono il formato Python-friendly.
         """
         assert len(ids) == len(payloads) == len(dense) == len(sparse)
         points = [
@@ -148,11 +148,11 @@ class QdrantStore:
         limit: int = 10,
         query_filter: Any | None = None,
     ) -> list[Any]:
-        """Hybrid = dense + sparse fused with Reciprocal Rank Fusion (RRF).
+        """Hybrid = dense + sparse fusi con Reciprocal Rank Fusion (RRF).
 
-        We increase the number of prefetch candidates to give the fusion
-        more material to work with (your point 4: with limit=5 the
-        prefetch was taking only 10 candidates, too few).
+        Aumentiamo il numero di candidati di prefetch per dare alla fusione
+        più materiale su cui lavorare (il tuo punto 4: con limit=5 il
+        prefetch prendeva solo 10 candidati, troppo pochi).
         """
         return self.client.query_points(
             collection_name=collection,
@@ -172,10 +172,10 @@ class QdrantStore:
 
 
 def _stable_id(point_id: str) -> int:
-    """Qdrant point IDs must be int or UUID. We hash strings to int64.
+    """Gli ID dei punti di Qdrant devono essere int o UUID. Hashiamo le stringhe a int64.
 
-    Using the same string always produces the same int, so upserts are
-    idempotent. Collisions are astronomically unlikely (sha256 → 63 bits).
+    Usare la stessa stringa produce sempre lo stesso int, quindi gli upsert sono
+    idempotenti. Le collisioni sono astronomicamente improbabili (sha256 → 63 bit).
     """
     digest = hashlib.sha256(point_id.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") & ((1 << 63) - 1)

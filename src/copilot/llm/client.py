@@ -1,8 +1,8 @@
-"""OpenAI-compatible LLM client pointed at DeepSeek.
+"""Client LLM OpenAI-compatibile puntato a DeepSeek.
 
-DeepSeek supports `response_format={"type": "json_object"}` but not
-`json_schema`. For this reason we describe the Pydantic schema in the system
-prompt and validate the response against the model.
+DeepSeek supporta `response_format={"type": "json_object"}` ma non
+`json_schema`. Per questo descriviamo lo schema Pydantic nel system prompt
+e validiamo la risposta contro il modello.
 """
 
 from __future__ import annotations
@@ -24,23 +24,23 @@ _DEFAULT_MODEL = "deepseek-chat"
 
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
-# Default budget per session. Configurable via constructor.
+# Default di budget per sessione. Modificabile via costruttore.
 _DEFAULT_MAX_COST_USD = 0.50
 
 
 class LLMError(RuntimeError):
-    """Single exception for any LLM problem."""
+    """Eccezione unica per qualsiasi problema LLM."""
 
 
 def _is_retryable(exc: Exception) -> bool:
-    # Retry only on rate limit and timeout. Use the class name instead of
-    # isinstance to avoid importing openai in tests that inject a fake.
+    # Retry solo su rate limit e timeout. Nome classe invece di isinstance
+    # per non importare openai nei test che iniettano un fake.
     name = type(exc).__name__
     return name in ("RateLimitError", "APITimeoutError", "Timeout")
 
 
 class LLMClient:
-    """DeepSeek client. One instance per process."""
+    """Client DeepSeek. Una istanza per processo."""
 
     def __init__(
         self,
@@ -53,7 +53,7 @@ class LLMClient:
         temperature: float = 0.0,
         max_cost_usd: float = _DEFAULT_MAX_COST_USD,
     ) -> None:
-        # Cumulative counters (compatible with existing callers).
+        # Contatori cumulativi (compatibilità con chiamanti esistenti).
         self.total_prompt_tokens: int = 0
         self.total_completion_tokens: int = 0
         self.cost_usd: float = 0.0
@@ -62,7 +62,7 @@ class LLMClient:
         self.model = model or os.environ.get("DEEPSEEK_MODEL", _DEFAULT_MODEL)
         self.temperature = temperature
 
-        # Test seam: with an injected client we never touch openai or env.
+        # Seam di test: con client iniettato non tocchiamo openai né env.
         if client is not None:
             self._client = client
             return
@@ -86,7 +86,7 @@ class LLMClient:
         return self._client
 
     def _call_api(self, full_system: str, user_prompt: str) -> Any:
-        # 1 retry on rate limit / timeout, then a clean fail.
+        # 1 retry su rate limit / timeout, poi fail pulito.
         last_exc: Exception | None = None
         for attempt in range(2):
             try:
@@ -115,15 +115,15 @@ class LLMClient:
         *,
         system_prompt: str = "",
     ) -> SchemaType:
-        # Budget check: fail before burning more tokens.
+        # Budget check: fail prima di bruciare altri token.
         if self.cost_usd >= self.max_cost_usd:
             raise LLMError(
                 f"budget_exceeded: ${self.cost_usd:.4f} >= "
                 f"${self.max_cost_usd:.4f}"
             )
 
-        # Serialize the schema into the system prompt (DeepSeek does not
-        # support json_schema directly).
+        # Serializza lo schema nel system prompt (DeepSeek non supporta
+        # json_schema direttamente).
         try:
             schema_json = schema.model_json_schema()
         except Exception as exc:
@@ -144,7 +144,7 @@ class LLMClient:
 
         response = self._call_api(full_system, user_prompt)
 
-        # Update cumulative tokens and session cost.
+        # Aggiorna token cumulativi e costo sessione.
         usage = getattr(response, "usage", None)
         if usage is not None:
             p = getattr(usage, "prompt_tokens", 0) or 0
@@ -157,7 +157,7 @@ class LLMClient:
                 schema.__name__, p, c, self.cost_usd,
             )
 
-        # Empty content is a fatal error.
+        # Empty content è un errore fatale.
         choices = getattr(response, "choices", None) or []
         if not choices:
             raise LLMError("LLM returned no choices.")
@@ -171,7 +171,7 @@ class LLMClient:
         except json.JSONDecodeError as exc:
             raise LLMError(f"LLM returned invalid JSON: {exc}") from exc
 
-        # Validate against the Pydantic model.
+        # Valida contro il modello Pydantic.
         try:
             return schema.model_validate(payload)
         except ValidationError as exc:
