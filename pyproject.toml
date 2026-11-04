@@ -97,8 +97,6 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
-    "copilot.schemas",
-    "copilot.timeline",
     "copilot.retrieval.*",
     "copilot.graph.state",
 ]
