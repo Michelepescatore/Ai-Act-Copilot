@@ -1,7 +1,7 @@
 """MCP server (mcp 1.x) exposing the AI Act corpus and the compliance graph.
 
 Tools: search_regulation, get_article, get_annex_point,
-get_applicability_date, assess_ai_system.
+assess_ai_system.
 
 Auth: none. Rate limiting is applied to mitigate abuse on public tunnels.
 
@@ -268,18 +268,6 @@ def get_annex_point(annex: str, point: str | None = None) -> dict[str, Any] | No
         "verbatim_excerpt": top.get("verbatim_excerpt"),
         "url": top.get("url"),
     }
-
-
-# ── Tool: get_applicability_date ────────────────────────────────────────────
-@mcp.tool()
-def get_applicability_date(article: str, risk_tier: str) -> str:
-    """Return the application date of an article for a given risk tier."""
-    from copilot.schemas import RiskTier
-    from copilot.timeline import applies_from
-
-    tier = RiskTier(risk_tier)
-    result = applies_from(article, tier)
-    return result.date.isoformat()
 
 
 # ── Tool: assess_ai_system ──────────────────────────────────────────────────

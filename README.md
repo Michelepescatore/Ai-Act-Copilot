@@ -409,7 +409,6 @@ cloudflared tunnel --url http://localhost:8000
 | `search_regulation` | Search the corpus (`dense`, `sparse`, `hybrid`, `hybrid_rerank`), on verbatim paragraphs or article/annex profiles. |
 | `get_article` | Exact text of an article, optionally of a single paragraph. |
 | `get_annex_point` | Text of an annex or of one of its points. |
-| `get_applicability_date` | Application date of an article for a given risk tier. |
 | `assess_ai_system` | Runs the full graph on a system description. |
 
 `assess_ai_system` is stateful. If the graph needs a missing fact it returns `{"status": "clarification_needed", "questions": [...], "thread_id": "..."}`; the client shows the questions and calls the tool again with the same `thread_id` and the user's reply as `answer`, until it returns `{"status": "completed", "report": {...}}`. Unlike the CLI, there is no limit on clarification rounds.
