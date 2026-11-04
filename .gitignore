@@ -1,0 +1,49 @@
+# Ambiente virtuale
+.venv/
+venv/
+env/
+
+# Credenziali e configurazioni locali
+.env
+.vscode
+
+# Cache di Python e file temporanei
+__pycache__/
+*.py[cod]
+
+# Cache degli strumenti di test e linting
+.pytest_cache/
+.ruff_cache/
+
+# File di sistema (macOS)
+.DS_Store
+
+# mypy
+.mypy_cache/
+
+# coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# dati grezzi e processati (rigenerabili con make ingest/index)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# risultati eval (rigenerabili con make eval)
+evals/results/
+
+# file temporanei di editor
+*.swp
+*~
+
+# --- MCP (esperimento locale, non pushato) ---
+# Il server MCP è un prototipo locale per imparare il protocollo. Non fa
+# parte del portfolio pubblico: il segnale è nella valutazione (Fase 8),
+# non nell'esposizione del corpus a Claude. Vedi decisions.md ADR-013.
+src/copilot/mcp_server/
+tests/test_mcp.py
+Dockerfile
+examples/claude_desktop_config.json
